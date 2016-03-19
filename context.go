@@ -11,7 +11,7 @@ import (
 
 // Set sets a context value on req.
 // It currently accomplishes this by replacing the http.Request’s Body with
-// a ContextReadCloser, which wraps the original io.ReadCloser.
+// a ReadCloser, which wraps the original io.ReadCloser.
 // See “Invasion of the Body Snatchers.”
 func Set(req *http.Request, key interface{}, value interface{}) {
 	crc := getContextReadCloser(req)
@@ -79,9 +79,9 @@ func Clear(req *http.Request) {
 	crc.context = map[interface{}]interface{}{}
 }
 
-// ContextReadCloser augments the io.ReadCloser interface
+// ReadCloser augments the io.ReadCloser interface
 // with a Context() method.
-type ContextReadCloser interface {
+type ReadCloser interface {
 	io.ReadCloser
 	Context() map[interface{}]interface{}
 }
@@ -95,8 +95,8 @@ func (crc *contextReadCloser) Context() map[interface{}]interface{} {
 	return crc.context
 }
 
-func getContextReadCloser(req *http.Request) ContextReadCloser {
-	crc, ok := req.Body.(ContextReadCloser)
+func getContextReadCloser(req *http.Request) ReadCloser {
+	crc, ok := req.Body.(ReadCloser)
 	if !ok {
 		crc = &contextReadCloser{
 			ReadCloser: req.Body,

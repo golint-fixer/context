@@ -1,108 +1,83 @@
-// Package context implements a simple request-aware HTTP context designed
-// to be used via middleware layer to share polymorfic data.
-//
-// context is not thread-safe by default.
+// Forked from the Gorilla context test:
+// https://github.com/gorilla/context/blob/master/context_test.go
+// © 2012 The Gorilla Authors
 package context
 
 import (
-	"io"
 	"net/http"
+	"testing"
+
+	"github.com/nbio/st"
 )
 
-// Set sets a context value on req.
-// It currently accomplishes this by replacing the http.Request’s Body with
-// a ContextReadCloser, which wraps the original io.ReadCloser.
-// See “Invasion of the Body Snatchers.”
-func Set(req *http.Request, key interface{}, value interface{}) {
+type keyType int
+
+const (
+	key1 keyType = iota
+	key2
+)
+
+func TestContext(t *testing.T) {
+	req, _ := http.NewRequest("GET", "http://localhost:8080/", nil)
+	empty, _ := http.NewRequest("GET", "http://localhost:8080/", nil)
 	crc := getContextReadCloser(req)
-	crc.Context()[key] = value
-}
 
-// Get gets a context value from req.
-// Returns nil if key not found in the request context.
-func Get(req *http.Request, key interface{}) interface{} {
-	crc := getContextReadCloser(req)
-	return crc.Context()[key]
-}
+	// Get()
+	st.Expect(t, Get(req, key1), nil)
 
-// GetOk gets a context value from req.
-// Returns (nil, false) if key not found in the request context.
-func GetOk(req *http.Request, key interface{}) (val interface{}, ok bool) {
-	crc := getContextReadCloser(req)
-	val, ok = crc.Context()[key]
-	return
-}
+	// Set()
+	Set(req, key1, "1")
+	st.Expect(t, Get(req, key1), "1")
+	st.Expect(t, len(crc.Context()), 1)
 
-// GetString gets a string context value from req.
-// Returns an empty string if key not found in the request context,
-// or the value does not evaluate to a string.
-func GetString(req *http.Request, key interface{}) string {
-	crc := getContextReadCloser(req)
-	if value, ok := crc.Context()[key]; ok {
-		if typed, ok := value.(string); ok {
-			return typed
-		}
-	}
-	return ""
-}
+	Set(req, key2, "2")
+	st.Expect(t, Get(req, key2), "2")
+	st.Expect(t, len(crc.Context()), 2)
 
-// GetError gets a error context value from req.
-// Returns nil if key not found in the request context,
-// or the value does not evaluate to a error.
-func GetError(req *http.Request, key interface{}) error {
-	crc := getContextReadCloser(req)
-	if value, ok := crc.Context()[key]; ok {
-		if typed, ok := value.(error); ok {
-			return typed
-		}
-	}
-	return nil
-}
+	// GetOk()
+	value, ok := GetOk(req, key1)
+	st.Expect(t, value, "1")
+	st.Expect(t, ok, true)
 
-// GetAll returns all stored context values for a request.
-// Will always return a valid map. Returns an empty map for
-// requests context data previously set.
-func GetAll(req *http.Request) map[interface{}]interface{} {
-	crc := getContextReadCloser(req)
-	return crc.Context()
-}
+	value, ok = GetOk(req, "not exists")
+	st.Expect(t, value, nil)
+	st.Expect(t, ok, false)
 
-// Delete deletes a stored value from a request’s context.
-func Delete(req *http.Request, key interface{}) {
-	crc := getContextReadCloser(req)
-	delete(crc.Context(), key)
-}
+	Set(req, "nil value", nil)
+	value, ok = GetOk(req, "nil value")
+	st.Expect(t, value, nil)
+	st.Expect(t, ok, true)
 
-// Clear clears all stored values from a request’s context.
-func Clear(req *http.Request) {
-	crc := getContextReadCloser(req).(*contextReadCloser)
-	crc.context = map[interface{}]interface{}{}
-}
+	// GetString()
+	Set(req, "int value", 13)
+	Set(req, "string value", "hello")
+	str := GetString(req, "int value")
+	st.Expect(t, str, "")
+	str = GetString(req, "string value")
+	st.Expect(t, str, "hello")
 
-// ContextReadCloser augments the io.ReadCloser interface
-// with a Context() method.
-type ContextReadCloser interface {
-	io.ReadCloser
-	Context() map[interface{}]interface{}
-}
+	// GetAll()
+	values := GetAll(req)
+	st.Expect(t, len(values), 5)
 
-type contextReadCloser struct {
-	io.ReadCloser
-	context map[interface{}]interface{}
-}
+	// GetAll() for empty request
+	values = GetAll(empty)
+	st.Expect(t, len(values), 0)
 
-func (crc *contextReadCloser) Context() map[interface{}]interface{} {
-	return crc.context
-}
+	// Delete()
+	Delete(req, key1)
+	st.Expect(t, Get(req, key1), nil)
+	st.Expect(t, len(crc.Context()), 4)
 
-func getContextReadCloser(req *http.Request) ContextReadCloser {
-	crc, ok := req.Body.(ContextReadCloser)
-	if !ok {
-		crc = &contextReadCloser{
-			ReadCloser: req.Body,
-			context:    make(map[interface{}]interface{}),
-		}
-		req.Body = crc
-	}
-	return crc
+	Delete(req, key2)
+	st.Expect(t, Get(req, key2), nil)
+	st.Expect(t, len(crc.Context()), 3)
+
+	// Clear()
+	Set(req, key1, true)
+	values = GetAll(req)
+	Clear(req)
+	st.Expect(t, len(crc.Context()), 0)
+	val, _ := values["int value"].(int)
+	st.Expect(t, val, 13) // Clear shouldn't delete values grabbed before
 }
