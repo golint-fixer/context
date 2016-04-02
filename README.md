@@ -1,4 +1,4 @@
-# context [![Build Status](https://travis-ci.org/vinci-proxy/context.png)](https://travis-ci.org/vinci-proxy/context) [![GoDoc](https://godoc.org/github.com/vinci-proxy/vinci/context?status.svg)](https://godoc.org/github.com/vinci-proxy/vinci/context) [![API](https://img.shields.io/badge/status-stable-green.svg?style=flat)](https://godoc.org/github.com/vinci-proxy/vinci/context) [![Coverage Status](https://coveralls.io/repos/github/vinci-proxy/context/badge.svg?branch=master)](https://coveralls.io/github/vinci-proxy/context?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/vinci-proxy/context)](https://goreportcard.com/report/github.com/vinci-proxy/context)
+# context [![Build Status](https://travis-ci.org/vinxi/context.png)](https://travis-ci.org/vinxi/context) [![GoDoc](https://godoc.org/github.com/vinxi/vinxi/context?status.svg)](https://godoc.org/github.com/vinxi/vinxi/context) [![API](https://img.shields.io/badge/status-stable-green.svg?style=flat)](https://godoc.org/github.com/vinxi/vinxi/context) [![Coverage Status](https://coveralls.io/repos/github/vinxi/context/badge.svg?branch=master)](https://coveralls.io/github/vinxi/context?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/vinxi/context)](https://goreportcard.com/report/github.com/vinxi/context)
 
 `context` package implements a simple, unobstructive context for request-aware data sharing across a middleware pipeline.
 
@@ -7,12 +7,12 @@ Originally based in [nbio/httpcontext](https://github.com/nbio/httpcontext).
 ## Installation
 
 ```bash
-go get -u gopkg.in/vinci-proxy/context.v0
+go get -u gopkg.in/vinxi/context.v0
 ```
 
 ## API
 
-See [godoc](https://godoc.org/github.com/vinci-proxy/context) reference.
+See [godoc](https://godoc.org/github.com/vinxi/context) reference.
 
 ## Example
 
@@ -21,14 +21,14 @@ package main
 
 import (
   "fmt"
-  "gopkg.in/vinci-proxy/context.v0"
-  "gopkg.in/vinci-proxy/vinci.v0"
+  "gopkg.in/vinxi/context.v0"
+  "gopkg.in/vinxi/vinxi.v0"
   "net/http"
 )
 
 func main() {
   fmt.Printf("Server listening on port: %d\n", 3100)
-  vs := vinci.NewServer(vinci.ServerOptions{Host: "localhost", Port: 3100})
+  vs := vinxi.NewServer(vinxi.ServerOptions{Host: "localhost", Port: 3100})
 
   vs.Use(func(w http.ResponseWriter, r *http.Request, h http.Handler) {
     context.Set(r, "foo", "bar")
