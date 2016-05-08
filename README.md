@@ -1,5 +1,7 @@
 # context [![Build Status](https://travis-ci.org/vinxi/context.png)](https://travis-ci.org/vinxi/context) [![GoDoc](https://godoc.org/github.com/vinxi/vinxi/context?status.svg)](https://godoc.org/github.com/vinxi/vinxi/context) [![API](https://img.shields.io/badge/status-stable-green.svg?style=flat)](https://godoc.org/github.com/vinxi/vinxi/context) [![Coverage Status](https://coveralls.io/repos/github/vinxi/context/badge.svg?branch=master)](https://coveralls.io/github/vinxi/context?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/vinxi/context)](https://goreportcard.com/report/github.com/vinxi/context)
 
+**Note**: merged into `vinxi/vinxi`.
+
 `context` package implements a simple, unobstructive context for request-aware data sharing across a middleware pipeline.
 
 Originally based in [nbio/httpcontext](https://github.com/nbio/httpcontext).
